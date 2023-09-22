@@ -1,12 +1,16 @@
 import vtk
-import sys
+from typing import List
 import nibabel as nib
 import numpy as np
 import os
+from batchgenerators.utilities.file_and_folder_operations import join
 
-def stltovtk(input_stl: str) -> str:
+def stltovtk(input_stl: str, output_folder: str) -> str:
     """Python function that uses vtk to convert a stl file to a vtk file
     Returns: path to vtk file"""
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder, exist_ok=True)
     assert input_stl.endswith('.stl'), 'stl file is expected!'
 
     reader = vtk.vtkSTLReader()
@@ -15,14 +19,14 @@ def stltovtk(input_stl: str) -> str:
     stl = reader.GetOutput()
 
     writer = vtk.vtkPolyDataWriter()
-    outfilename = input_stl.replace('.stl', '.vtk')
+    outfilename = join(output_folder, os.path.basename(input_stl.replace('.stl', '.vtk')))
     writer.SetFileName(outfilename)
     writer.SetInputData(stl)
     writer.Update()
 
     return outfilename
 
-def vtktonii(input_vtk:str, ref:str, addheader: bool = True) -> str:
+def vtktonii(input_vtk:str, ref:str, output_folder: str) -> str:
 
     # import vtk image
     reader = vtk.vtkPolyDataReader()
@@ -35,10 +39,9 @@ def vtktonii(input_vtk:str, ref:str, addheader: bool = True) -> str:
 
     # read reference volume nii file
     refnii = nib.load(ref)
-    refnii_data = refnii.get_fdata()
-    refnii_afine = refnii.affine
+    refnii_data, refnii_affine = refnii.get_fdata(), refnii.affine
     x_dim, y_dim, z_dim = refnii_data.shape
-    sx, sy, sz = abs(refnii_afine[0,0]), abs(refnii_afine[1,1]), abs(refnii_afine[2,2])
+    sx, sy, sz = abs(refnii_affine[0,0]), abs(refnii_affine[1,1]), abs(refnii_affine[2,2])
     ox, oy, oz = (0, 0, 0)
 
     image = vtk.vtkImageData()
@@ -67,17 +70,16 @@ def vtktonii(input_vtk:str, ref:str, addheader: bool = True) -> str:
     imgstenc.Update()
 
     writer = vtk.vtkNIFTIImageWriter()
-    outfilename = input_vtk.replace('.vtk', '.nii.gz')
+    outfilename = join(output_folder, os.path.basename(input_vtk.replace('.vtk', '.nii.gz')))
     writer.SetFileName(outfilename)
     writer.SetInputConnection(imgstenc.GetOutputPort())
     writer.Write()
 
-    if addheader:
-        assert (refnii is not None and ref.endswith(".nii.gz")), "Please provide valid reference nifti file"
-        label = nib.load(outfilename)
-        label_array = label.get_fdata()
-        niipostproc = addrefheader(label_array, refnii_afine)
-        nib.save(niipostproc, outfilename)
+    assert (refnii is not None and ref.endswith(".nii.gz")), "Please provide valid reference nifti file"
+    label = nib.load(outfilename)
+    label_array = label.get_fdata()
+    niipostproc = addrefheader(label_array, refnii_affine)
+    nib.save(niipostproc, outfilename)
 
     return outfilename
 
@@ -88,20 +90,31 @@ def addrefheader(label_array: np.ndarray, refnii_affine: np.ndarray):
     return niipostproc
 
 
-def stltonii(stl, nii_ref):
-    transformed_to_vtk = stltovtk(stl)
-    if nii_ref is not None:
-        refheader = True
-    else:
-        refheader = False
-    nii_file_final = vtktonii(transformed_to_vtk, ref = nii_ref, addheader=refheader)
-    os.remove(transformed_to_vtk)
+def stltonii(stl_files_list: List[str], nii_ref: str, output_folder: str):
+    for stl_file in stl_files_list:
+        transformed_to_vtk = stltovtk(stl_file, output_folder=output_folder)
+        nii_file_final = vtktonii(transformed_to_vtk, ref = nii_ref, output_folder=output_folder)
+        os.remove(transformed_to_vtk)
     return nii_file_final
 
 def rotstl(data_array: np.ndarray) -> np.ndarray:
     label_array = np.flip(data_array, 1)
     return label_array
-    
+
+def run_stl2nii_entrypoint():
+
+    import argparse
+    parser = argparse.ArgumentParser(prog='stl2nii', 
+                                     description="Stl to NIFTI (.nii.gz) file converter")
+    parser.add_argument('-i', nargs='+', type=str, 
+                        required=True, help='Input files. Can be one or more.')
+    parser.add_argument('-ref', type=str, required=True, help='Reference NIFTI for computing image properties (i.e. spacing, ...)')
+    parser.add_argument('-o', type=str, required=True, 
+                        help='Folder were output will be written')
+    args = parser.parse_args()
+    stltonii(args.i, args.ref, args.o)
 
 if __name__ == "__main__":
-    stltonii(sys.argv[1], sys.argv[2])
+    
+    run_stl2nii_entrypoint()
+
