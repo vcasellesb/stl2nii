@@ -109,12 +109,17 @@ def run_stl2nii_entrypoint():
     parser.add_argument('-i', nargs='+', type=str, 
                         required=True, help='Input files. Can be one or more.')
     parser.add_argument('-ref', type=str, required=True, help='Reference NIFTI for computing image properties (i.e. spacing, ...)')
-    parser.add_argument('-o', type=str, required=True, 
-                        help='Folder were output will be written')
+    parser.add_argument('-o', type=str, required=False, default='nii', 
+                        help='Folder were output will be written (default: nii)')
     args = parser.parse_args()
     stltonii(args.i, args.ref, args.o)
 
 if __name__ == "__main__":
+    # import sys
+    # i = sys.argv[1]
+    # i = nib.load(i).affine
+    # print(i)
+    # exit(0)
     
     run_stl2nii_entrypoint()
 
