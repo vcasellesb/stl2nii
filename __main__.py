@@ -75,7 +75,7 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str) -> str:
     writer.SetInputConnection(imgstenc.GetOutputPort())
     writer.Write()
 
-    assert (refnii is not None and ref.endswith(".nii.gz")), "Please provide valid reference nifti file"
+    assert (refnii is not None and ref.endswith((".nii.gz", ".nii"))), "Please provide valid reference nifti file"
     label = nib.load(outfilename)
     label_array = label.get_fdata()
     niipostproc = addrefheader(label_array, refnii_affine)
