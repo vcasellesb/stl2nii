@@ -3,11 +3,12 @@ from typing import List
 import nibabel as nib
 import numpy as np
 import os
-from batchgenerators.utilities.file_and_folder_operations import join
 
 def stltovtk(input_stl: str, output_folder: str) -> str:
-    """Python function that uses vtk to convert a stl file to a vtk file
-    Returns: path to vtk file"""
+    """
+    Stl to vtk conversion.
+    Returns: path to vtk file
+    """
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder, exist_ok=True)
@@ -19,7 +20,7 @@ def stltovtk(input_stl: str, output_folder: str) -> str:
     stl = reader.GetOutput()
 
     writer = vtk.vtkPolyDataWriter()
-    outfilename = join(output_folder, os.path.basename(input_stl.replace('.stl', '.vtk')))
+    outfilename = os.path.join(output_folder, os.path.basename(input_stl.replace('.stl', '.vtk')))
     writer.SetFileName(outfilename)
     writer.SetInputData(stl)
     writer.Update()
@@ -27,6 +28,9 @@ def stltovtk(input_stl: str, output_folder: str) -> str:
     return outfilename
 
 def vtktonii(input_vtk:str, ref:str, output_folder: str) -> str:
+    """
+    Vtk to nii conversion
+    """
 
     # import vtk image
     reader = vtk.vtkPolyDataReader()
@@ -70,27 +74,25 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str) -> str:
     imgstenc.Update()
 
     writer = vtk.vtkNIFTIImageWriter()
-    outfilename = join(output_folder, os.path.basename(input_vtk.replace('.vtk', '.nii.gz')))
+    outfilename = os.path.join(output_folder, os.path.basename(input_vtk.replace('.vtk', '.nii.gz')))
     writer.SetFileName(outfilename)
     writer.SetInputConnection(imgstenc.GetOutputPort())
     writer.Write()
 
     assert (refnii is not None and ref.endswith((".nii.gz", ".nii"))), "Please provide valid reference nifti file"
     label = nib.load(outfilename)
-    label_array = label.get_fdata()
-    niipostproc = addrefheader(label_array, refnii_affine)
+    label_array = label.get_fdata().astype(np.uint8)
+    label_array = rotstl(label_array)
+    niipostproc = nib.Nifti1Image(label_array, refnii_affine)
     nib.save(niipostproc, outfilename)
 
     return outfilename
 
-def addrefheader(label_array: np.ndarray, refnii_affine: np.ndarray):
-    label_array = rotstl(label_array)
-    label_array = label_array.astype(np.uint8)
-    niipostproc = nib.Nifti1Image(label_array, refnii_affine)
-    return niipostproc
-
-
 def stltonii(stl_files_list: List[str], nii_ref: str, output_folder: str):
+    """
+    Main function. Basically iterates through input and performs confersion in two steps:
+        stl -> vtk -> nii
+    """
     for stl_file in stl_files_list:
         transformed_to_vtk = stltovtk(stl_file, output_folder=output_folder)
         nii_file_final = vtktonii(transformed_to_vtk, ref = nii_ref, output_folder=output_folder)
@@ -114,7 +116,7 @@ def run_stl2nii_entrypoint():
     args = parser.parse_args()
 
     if args.o is None:
-        args.o = join(os.path.dirname(args.i[0]), 'nii')
+        args.o = os.path.join(os.path.dirname(args.i[0]), 'nii')
     
     stltonii(args.i, args.ref, args.o)
 

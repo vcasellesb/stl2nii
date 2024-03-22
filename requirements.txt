@@ -1,4 +1,3 @@
-batchgenerators==0.25
 nibabel==5.1.0
 numpy==1.26.0
 vtk==9.3.0
