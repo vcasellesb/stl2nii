@@ -5,5 +5,5 @@ This Python file will convert your STL meshes into NIFTI files. The way the code
 ## Usage
 
 ```bash
-python3 /path/to/stl2nii -i [.stl files] -ref [.nii/.nii.gz file to map stl to its space (usually the image the stl comes from)] -o [/path/to/desired/out/folder]]
+python3 /path/to/stl2nii -i [.stl file(s)] -ref [.nii/.nii.gz file to map stl to its space (usually the image the stl comes from)] -o [/path/to/desired/output/folder]]
 ```

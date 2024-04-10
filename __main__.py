@@ -42,9 +42,9 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str) -> str:
     polydata = reader.GetOutput()
 
     # read reference volume nii file
-    refnii = nib.load(ref)
-    refnii_data, refnii_affine = refnii.get_fdata(), refnii.affine
-    x_dim, y_dim, z_dim = refnii_data.shape
+    refnii: nib.Nifti1Image = nib.load(ref)
+    refnii_ndarray, refnii_affine = refnii.get_fdata(), refnii.affine
+    x_dim, y_dim, z_dim = refnii_ndarray.shape
     sx, sy, sz = abs(refnii_affine[0,0]), abs(refnii_affine[1,1]), abs(refnii_affine[2,2])
     ox, oy, oz = (0, 0, 0)
 
@@ -80,7 +80,7 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str) -> str:
     writer.Write()
 
     assert (refnii is not None and ref.endswith((".nii.gz", ".nii"))), "Please provide valid reference nifti file"
-    label = nib.load(outfilename)
+    label: nib.Nifti1Image = nib.load(outfilename)
     label_array = label.get_fdata().astype(np.uint8)
     label_array = rotstl(label_array)
     niipostproc = nib.Nifti1Image(label_array, refnii_affine)
@@ -121,11 +121,5 @@ def run_stl2nii_entrypoint():
     stltonii(args.i, args.ref, args.o)
 
 if __name__ == "__main__":
-    # import sys
-    # i = sys.argv[1]
-    # i = nib.load(i).affine
-    # print(i)
-    # exit(0)
     
     run_stl2nii_entrypoint()
-
