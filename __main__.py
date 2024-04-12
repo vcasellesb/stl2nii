@@ -27,7 +27,7 @@ def stltovtk(input_stl: str, output_folder: str) -> str:
 
     return outfilename
 
-def vtktonii(input_vtk:str, ref:str, output_folder: str) -> str:
+def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
     """
     Vtk to nii conversion
     """
@@ -81,21 +81,28 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str) -> str:
 
     assert (refnii is not None and ref.endswith((".nii.gz", ".nii"))), "Please provide valid reference nifti file"
     label: nib.Nifti1Image = nib.load(outfilename)
-    label_array = label.get_fdata().astype(np.uint8)
+    label_array = label.get_fdata().astype(dtype)
     label_array = rotstl(label_array)
     niipostproc = nib.Nifti1Image(label_array, refnii_affine)
     nib.save(niipostproc, outfilename)
 
     return outfilename
 
-def stltonii(stl_files_list: List[str], nii_ref: str, output_folder: str):
+def stltonii(stl_files_list: List[str], 
+             nii_ref: str, 
+             output_folder: str, 
+             dtype):
     """
     Main function. Basically iterates through input and performs confersion in two steps:
         stl -> vtk -> nii
     """
     for stl_file in stl_files_list:
         transformed_to_vtk = stltovtk(stl_file, output_folder=output_folder)
-        nii_file_final = vtktonii(transformed_to_vtk, ref = nii_ref, output_folder=output_folder)
+        
+        nii_file_final = vtktonii(transformed_to_vtk, ref = nii_ref, 
+                                  output_folder=output_folder, 
+                                  dtype=dtype)
+        
         os.remove(transformed_to_vtk)
     return nii_file_final
 
@@ -103,23 +110,40 @@ def rotstl(data_array: np.ndarray) -> np.ndarray:
     label_array = np.flip(data_array, 1)
     return label_array
 
+def parsedtype(dtype):
+    """
+    Dumb albeit self-explanatory
+    """
+    if dtype == 'UINT16':
+        return np.uint16
+    elif dtype == 'UINT32':
+        return np.uint32
+    elif dtype == 'UINT64':
+        return np.uint64
+    
 def run_stl2nii_entrypoint():
-
     import argparse
+
     parser = argparse.ArgumentParser(prog='stl2nii', 
-                                     description="Stl to NIFTI (.nii.gz) file converter")
-    parser.add_argument('-i', nargs='+', type=str, 
-                        required=True, help='Input files. Can be one or more.')
-    parser.add_argument('-ref', type=str, required=True, help='Reference NIFTI for computing image properties (i.e. spacing, ...)')
+                                     description="stl to NIFTI (.nii.gz) file converter")
+    parser.add_argument('-i', nargs='+', type=str, required=True, 
+                        help='Input files. Can be one or more.')
+    parser.add_argument('-ref', type=str, required=True, 
+                        help='Reference NIFTI for computing image properties (i.e. spacing, ...)')
     parser.add_argument('-o', type=str, required=False, default=None, 
                         help='Folder were output will be written (default: input_dir/nii)')
+    parser.add_argument('-dtype', required=False, default=np.uint8,
+                        choices=['UINT8', 'UINT16', 'UINT32', 'UINT64'],
+                        help = 'Data type for the resulting NIFTI label (voxel values).')
     args = parser.parse_args()
 
     if args.o is None:
-        args.o = os.path.join(os.path.dirname(args.i[0]), 'nii')
-    
-    stltonii(args.i, args.ref, args.o)
+        args.o = os.path.join(os.path.dirname(args.i[0]), 'nii') # this could be improved
 
-if __name__ == "__main__":
-    
+    if isinstance(args.dtype, str):
+        args.dtype = parsedtype(args.dtype)
+
+    stltonii(args.i, args.ref, args.o, args.dtype)
+
+if __name__ == "__main__":   
     run_stl2nii_entrypoint()
