@@ -15,5 +15,8 @@ python3 /path/to/stl2nii -i [.stl file(s)] -ref [.nii/.nii.gz file to map stl to
 Let's say I want to convert a bunch of STL meshes I've obtained by segmenting the image corresponding to patient 225 using my favourite automatic segmentation tool. These are in my Downloads folder, and I want to generate NIFTI files mapped to the original image. I'd do it like this:
 
 ```bash
-python3 ~/work/research/stl2nii -i ~/Downloads/P225/*.stl -ref data/P225/image/data_P225.nii.gz -o data/P225/labels/nii
+python3 ~/work/research/stl2nii \
+    -i ~/Downloads/P225/*.stl \
+    -ref data/P225/image/data_P225.nii.gz \
+    -o data/P225/labels/nii
 ```
