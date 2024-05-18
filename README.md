@@ -1,6 +1,6 @@
 # STL to NIFTI file converter
 
-This Python file will convert your STL meshes into NIFTI files. This "tool" is intended for researchers working on biomedical imaging, so the code is structured in a way that requires you to provide an input image to map the "labels" to.
+This Python file will convert your STL meshes into NIFTI files. This "tool" is intended for researchers working on biomedical imaging, so the code is structured in a way that requires you to provide an input image to map the "labels" to. Please, if you've found this code useful don't forget to give it a star!
 
 **WARNING**: Default setting casts the output NIFTI numpy array to ```uint8```. To change this behavior, use the `-dtype` flag.
 
