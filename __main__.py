@@ -3,6 +3,7 @@ from typing import List
 import nibabel as nib
 import numpy as np
 import os
+from vtkmodules.util.numpy_support import vtk_to_numpy
 
 def stltovtk(input_stl: str, output_folder: str) -> str:
     """
@@ -56,8 +57,13 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
 
     inval = 1
     outval = 0
-    for i in range(image.GetNumberOfPoints()):
-        image.GetPointData().GetScalars().SetTuple1(i, inval)
+    
+    # https://github.com/vcasellesb/stl2nii/issues/2
+    scalars = image.GetPointData().GetScalars()
+    scalar_array = vtk_to_numpy(scalars)
+    scalar_array[:] = inval
+
+    scalars.Modified()
 
     pol2stenc = vtk.vtkPolyDataToImageStencil()
     pol2stenc.SetInputData(polydata)
