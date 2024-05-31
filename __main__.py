@@ -88,7 +88,10 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
     assert (refnii is not None and ref.endswith((".nii.gz", ".nii"))), "Please provide valid reference nifti file"
     label: nib.Nifti1Image = nib.load(outfilename)
     label_array = label.get_fdata().astype(dtype)
-    label_array = rotstl(label_array)
+   
+   # this is hardcoded. I've found that it's necessary in the stl files I've encountered. Please consider if it works in your case
+    label_array = rotatestl(label_array)
+    
     niipostproc = nib.Nifti1Image(label_array, refnii_affine)
     nib.save(niipostproc, outfilename)
 
@@ -96,13 +99,17 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
 
 def stltonii(stl_files_list: List[str], 
              nii_ref: str, 
-             output_folder: str, 
-             dtype):
+             dtype,
+             output_folder: str = None):
     """
     Main function. Basically iterates through input and performs confersion in two steps:
         stl -> vtk -> nii
     """
     for stl_file in stl_files_list:
+        
+        if output_folder is None:
+            output_folder = os.path.join(os.path.dirname(stl_file), 'nii') 
+            
         transformed_to_vtk = stltovtk(stl_file, output_folder=output_folder)
         
         nii_file_final = vtktonii(transformed_to_vtk, ref = nii_ref, 
@@ -112,7 +119,10 @@ def stltonii(stl_files_list: List[str],
         os.remove(transformed_to_vtk)
     return nii_file_final
 
-def rotstl(data_array: np.ndarray) -> np.ndarray:
+def rotatestl(data_array: np.ndarray) -> np.ndarray:
+    """
+    Hardcoded. Requires trial and error.
+    """
     label_array = np.flip(data_array, 1)
     return label_array
 
@@ -142,9 +152,6 @@ def run_stl2nii_entrypoint():
                         choices=['UINT8', 'UINT16', 'UINT32', 'UINT64'],
                         help = 'Data type for the resulting NIFTI label (voxel values).')
     args = parser.parse_args()
-
-    if args.o is None:
-        args.o = os.path.join(os.path.dirname(args.i[0]), 'nii') # this could be improved
 
     if isinstance(args.dtype, str):
         args.dtype = parsedtype(args.dtype)
