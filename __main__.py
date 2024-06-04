@@ -109,7 +109,6 @@ def stltonii(stl_files_list: List[str],
         
         if output_folder is None:
             output_folder = os.path.join(os.path.dirname(stl_file), 'nii') 
-            
         transformed_to_vtk = stltovtk(stl_file, output_folder=output_folder)
         
         nii_file_final = vtktonii(transformed_to_vtk, ref = nii_ref, 
@@ -156,7 +155,7 @@ def run_stl2nii_entrypoint():
     if isinstance(args.dtype, str):
         args.dtype = parsedtype(args.dtype)
 
-    stltonii(args.i, args.ref, args.o, args.dtype)
+    stltonii(args.i, args.ref, output_folder=args.o, dtype=args.dtype)
 
 if __name__ == "__main__":   
     run_stl2nii_entrypoint()
