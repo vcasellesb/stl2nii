@@ -13,7 +13,7 @@ def stltovtk(input_stl: str, output_folder: str) -> str:
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder, exist_ok=True)
-    assert input_stl.endswith('.stl'), f'stl file is expected! Got {input_stl[:3]} instead.'
+    assert input_stl.endswith('.stl'), f'stl file is expected! Got {input_stl[-3:]} instead.'
 
     reader = vtk.vtkSTLReader()
     reader.SetFileName(input_stl)
