@@ -1,6 +1,6 @@
 import vtk
+import SimpleITK as sitk
 from typing import List
-import nibabel as nib
 import numpy as np
 import os
 from vtkmodules.util.numpy_support import vtk_to_numpy
@@ -43,16 +43,17 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
     polydata = reader.GetOutput()
 
     # read reference volume nii file
-    refnii: nib.Nifti1Image = nib.load(ref)
-    refnii_ndarray, refnii_affine = refnii.get_fdata(), refnii.affine
-    x_dim, y_dim, z_dim = refnii_ndarray.shape
-    sx, sy, sz = abs(refnii_affine[0,0]), abs(refnii_affine[1,1]), abs(refnii_affine[2,2])
-    ox, oy, oz = (0, 0, 0)
-
+    refnii = sitk.ReadImage(ref)
+    refnii_ndarray = sitk.GetArrayFromImage(refnii)
+    ref_dims = refnii_ndarray.shape[::-1]
+    ref_spacing = refnii.GetSpacing()
+    ref_origin = (0, 0, 0)
+    ref_direction = refnii.GetDirection()
+    
     image = vtk.vtkImageData()
-    image.SetSpacing(sx, sy, sz)
-    image.SetDimensions(x_dim, y_dim, z_dim)
-    image.SetOrigin(ox, oy, oz)
+    image.SetSpacing(ref_spacing[0], ref_spacing[1], ref_spacing[2])
+    image.SetDimensions(ref_dims[0], ref_dims[1], ref_dims[2])
+    image.SetOrigin(ref_origin[0], ref_origin[1], ref_origin[2])
     image.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
 
     inval = 1
@@ -67,8 +68,8 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
 
     pol2stenc = vtk.vtkPolyDataToImageStencil()
     pol2stenc.SetInputData(polydata)
-    pol2stenc.SetOutputOrigin((ox, oy, oz))
-    pol2stenc.SetOutputSpacing((sx, sy, sz))
+    pol2stenc.SetOutputOrigin(ref_origin)
+    pol2stenc.SetOutputSpacing(ref_spacing)
     pol2stenc.SetOutputWholeExtent(image.GetExtent())
     pol2stenc.Update()
 
@@ -86,14 +87,18 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
     writer.Write()
 
     assert (refnii is not None and ref.endswith((".nii.gz", ".nii"))), "Please provide valid reference nifti file"
-    label: nib.Nifti1Image = nib.load(outfilename)
-    label_array = label.get_fdata().astype(dtype)
+    label = sitk.ReadImage(outfilename)
+    label_array = sitk.GetArrayFromImage(label).astype(dtype)
+    assert np.sum(label_array>0) != 0
    
    # this is hardcoded. I've found that it's necessary in the stl files I've encountered. Please consider if it works in your case
     label_array = rotatestl(label_array)
     
-    niipostproc = nib.Nifti1Image(label_array, refnii_affine)
-    nib.save(niipostproc, outfilename)
+    niipostproc = sitk.GetImageFromArray(label_array)
+    niipostproc.SetDirection(ref_direction)
+    niipostproc.SetOrigin(refnii.GetOrigin())
+    niipostproc.SetSpacing(ref_spacing)
+    sitk.WriteImage(niipostproc, outfilename)
 
     return outfilename
 
