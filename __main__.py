@@ -45,15 +45,15 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
     # read reference volume nii file
     refnii = sitk.ReadImage(ref)
     refnii_ndarray = sitk.GetArrayFromImage(refnii)
-    ref_dims = refnii_ndarray.shape[::-1]
+    ref_dims = refnii_ndarray.shape[::-1] # flip to match image (maybe should be changed per use case?)
     ref_spacing = refnii.GetSpacing()
     ref_origin = (0, 0, 0)
     ref_direction = refnii.GetDirection()
     
     image = vtk.vtkImageData()
-    image.SetSpacing(ref_spacing[0], ref_spacing[1], ref_spacing[2])
-    image.SetDimensions(ref_dims[0], ref_dims[1], ref_dims[2])
-    image.SetOrigin(ref_origin[0], ref_origin[1], ref_origin[2])
+    image.SetSpacing(ref_spacing)
+    image.SetDimensions(ref_dims)
+    image.SetOrigin(ref_origin)
     image.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
 
     inval = 1
@@ -92,7 +92,7 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
     assert np.sum(label_array>0) != 0
    
    # this is hardcoded. I've found that it's necessary in the stl files I've encountered. Please consider if it works in your case
-    label_array = rotatestl(label_array)
+    label_array = rotate_stl(label_array)
     
     niipostproc = sitk.GetImageFromArray(label_array)
     niipostproc.SetDirection(ref_direction)
@@ -123,14 +123,14 @@ def stltonii(stl_files_list: List[str],
         os.remove(transformed_to_vtk)
     return nii_file_final
 
-def rotatestl(data_array: np.ndarray) -> np.ndarray:
+def rotate_stl(data_array: np.ndarray) -> np.ndarray:
     """
     Hardcoded. Requires trial and error.
     """
     label_array = np.flip(data_array, 1)
     return label_array
 
-def parsedtype(dtype):
+def parse_dtype(dtype):
     """
     Dumb albeit self-explanatory
     """
@@ -158,9 +158,12 @@ def run_stl2nii_entrypoint():
     args = parser.parse_args()
 
     if isinstance(args.dtype, str):
-        args.dtype = parsedtype(args.dtype)
+        args.dtype = parse_dtype(args.dtype)
 
-    stltonii(args.i, args.ref, output_folder=args.o, dtype=args.dtype)
+    stltonii(stl_files_list=args.i, 
+             nii_ref=args.ref, 
+             output_folder=args.o, 
+             dtype=args.dtype)
 
 if __name__ == "__main__":   
     run_stl2nii_entrypoint()
