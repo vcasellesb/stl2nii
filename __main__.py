@@ -28,11 +28,11 @@ def stltovtk(input_stl: str, output_folder: str) -> str:
 
     return outfilename
 
-def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
+def vtktonii(input_vtk:str, ref: str, output_folder: str, dtype) -> str:
     """
     Vtk to nii conversion
     """
-
+    
     # import vtk image
     reader = vtk.vtkPolyDataReader()
     reader.SetFileName(input_vtk)
@@ -86,12 +86,12 @@ def vtktonii(input_vtk:str, ref:str, output_folder: str, dtype) -> str:
     writer.SetInputConnection(imgstenc.GetOutputPort())
     writer.Write()
 
-    assert (refnii is not None and ref.endswith((".nii.gz", ".nii"))), "Please provide valid reference nifti file"
     label = sitk.ReadImage(outfilename)
     label_array = sitk.GetArrayFromImage(label).astype(dtype)
-    assert np.sum(label_array>0) != 0
+    assert np.sum(label_array>0) != 0, "Empty mask. Please report this issue (in case it's not supposed to be empty) \
+        at https://github.com/vcasellesb/stl2nii/issues"
    
-   # this is hardcoded. I've found that it's necessary in the stl files I've encountered. Please consider if it works in your case
+    # this is hardcoded. I've found that it's necessary in the stl files I've encountered. Please consider if it works in your case
     label_array = rotate_stl(label_array)
     
     niipostproc = sitk.GetImageFromArray(label_array)
@@ -134,12 +134,17 @@ def parse_dtype(dtype):
     """
     Dumb albeit self-explanatory
     """
-    if dtype == 'UINT16':
-        return np.uint16
-    elif dtype == 'UINT32':
-        return np.uint32
-    elif dtype == 'UINT64':
-        return np.uint64
+    match dtype:
+        case 'UINT8':
+            return np.uint8
+        case 'UINT16':
+            return np.uint16
+        case 'UINT32':
+            return np.uint32
+        case 'UINT64':
+            return np.uint64
+        case _:
+            raise ValueError('WTF')
     
 def run_stl2nii_entrypoint():
     import argparse
