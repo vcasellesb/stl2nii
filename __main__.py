@@ -97,7 +97,7 @@ def vtktonii(input_vtk:str, ref: str, output_folder: str, dtype) -> str:
     niipostproc = sitk.GetImageFromArray(label_array)
     niipostproc.SetDirection(ref_direction)
     niipostproc.SetOrigin(refnii.GetOrigin())
-    niipostproc.SetSpacing(ref_spacing)
+    niipostproc.SetSpacing(refnii.GetSpacing())
     sitk.WriteImage(niipostproc, outfilename)
 
     return outfilename

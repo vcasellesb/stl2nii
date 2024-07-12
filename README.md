@@ -23,3 +23,9 @@ python3 ~/work/research/stl2nii \
     -ref data/P225/image/data_P225.nii.gz \
     -o data/P225/labels/nii
 ```
+
+### Disclosures
+
+A few things in the code are hardcoded, so please feel free to experiment whether they work in your case. Namely, these are:
+- Rotating the converted stl array (see lines 95 and 126-131).
+- At the start of the `.vtk` -> `.nii` conversion, I set the origin of the output to `(0, 0, 0)`. I've been told that this is not optimal, since obviously you wanna set the so that it matches the reference. However, I do this at the end, when loading back the nii file to rotate it (see previous point). Please consider if this behavior is what you wanna. Maybe in the future I'll implement a flag that deactivates this. This behavior is because of how my `.stl` files are, but it might mess up yours.
