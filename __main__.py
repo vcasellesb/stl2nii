@@ -30,8 +30,7 @@ def stltovtk(input_stl: str, output_folder: str) -> str:
 
 def vtktonii(input_vtk:str, 
              ref: str, 
-             output_folder: str, 
-             dtype, 
+             output_folder: str,
              weird_behavior: bool = False) -> str:
     """
     Vtk to nii conversion
@@ -92,7 +91,7 @@ def vtktonii(input_vtk:str,
 
     if weird_behavior:
         label = sitk.ReadImage(outfilename)
-        label_array = sitk.GetArrayFromImage(label).astype(dtype)
+        label_array = sitk.GetArrayFromImage(label)
         assert np.sum(label_array>0) != 0, "Empty mask. Please report this issue (in case it's not supposed to be empty) \
             at https://github.com/vcasellesb/stl2nii/issues"
     
@@ -108,8 +107,7 @@ def vtktonii(input_vtk:str,
     return outfilename
 
 def stltonii(stl_files_list: List[str], 
-             nii_ref: str, 
-             dtype,
+             nii_ref: str,
              output_folder: str=None,
              weird_behavior: bool=False):
     """
@@ -123,8 +121,7 @@ def stltonii(stl_files_list: List[str],
         transformed_to_vtk = stltovtk(stl_file, output_folder=output_folder)
         
         nii_file_final = vtktonii(transformed_to_vtk, ref = nii_ref, 
-                                  output_folder=output_folder, 
-                                  dtype=dtype,
+                                  output_folder=output_folder,
                                   weird_behavior=weird_behavior)
         
         os.remove(transformed_to_vtk)
@@ -136,23 +133,6 @@ def rotate_stl(data_array: np.ndarray) -> np.ndarray:
     """
     label_array = np.flip(data_array, 1)
     return label_array
-
-def parse_dtype(dtype: str):
-    """
-    Dumb albeit self-explanatory
-    """
-    
-    match dtype:
-        case 'UINT8':
-            dtype_ = np.uint8
-        case 'UINT16':
-            dtype_ = np.uint16
-        case 'UINT32':
-            dtype_ = np.uint32
-        case 'UINT64':
-            dtype_ = np.uint64
-        
-    return dtype_
     
 def run_stl2nii_entrypoint():
     import argparse
@@ -165,22 +145,14 @@ def run_stl2nii_entrypoint():
                         help='Reference NIFTI for computing image properties (i.e. spacing, ...)')
     parser.add_argument('-o', type=str, required=False, default=None, 
                         help='Folder were output will be written (default: input_dir/nii)')
-    parser.add_argument('-dtype', required=False, default=np.uint8,
-                        choices=['UINT8', 'UINT16', 'UINT32', 'UINT64'],
-                        help = 'Data type for the resulting NIFTI label (voxel values). Choices are: '
-                        "['UINT8', 'UINT16', 'UINT32', 'UINT64']")
     parser.add_argument('--weird_behavior', required=False, action='store_true',
                         help='Set this if you want to activate the weird behavior that is discussed in issue #3 '
                         'This is just to match the "developer"\'s (vicentcaselles) use case')
     args = parser.parse_args()
 
-    if isinstance(args.dtype, str):
-        args.dtype = parse_dtype(args.dtype)
-
     stltonii(stl_files_list=args.i, 
              nii_ref=args.ref, 
-             output_folder=args.o, 
-             dtype=args.dtype,
+             output_folder=args.o,     
              weird_behavior=args.weird_behavior)
 
 if __name__ == "__main__":   
