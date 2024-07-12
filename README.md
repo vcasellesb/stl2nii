@@ -26,6 +26,8 @@ python3 ~/work/research/stl2nii \
 
 ### Disclosures
 
-A few things in the code are hardcoded, so please feel free to experiment whether they work in your case. Namely, these are:
-- Rotating the converted stl array (see lines 95 and 126-131).
-- At the start of the `.vtk` -> `.nii` conversion, I set the origin of the output to `(0, 0, 0)`. I've been told that this is not optimal, since obviously you wanna set the so that it matches the reference. However, I do this at the end, when loading back the nii file to rotate it (see previous point). Please consider if this behavior is what you wanna. Maybe in the future I'll implement a flag that deactivates this. This behavior is because of how my `.stl` files are, but it might mess up yours.
+A few things in the code were hardcoded, and now have been hidden away with a flag. You can still activate them with the ```--weird_behavior``` flag. Namely, these were:
+- Rotating the converted `stl` array (see lines 100 and 133-138).
+- At the start of the `.vtk` -> `.nii` conversion, I used to set the origin of the output `sitk.Image` to `(0, 0, 0)`. I've been told that this is not optimal, since obviously you wanna set the so that it matches the reference, so now the default behavior is using the reference origin. However, in my use case, the only way to successfully convert the `stl` meshes is to set it to `(0, 0, 0)`. Please consider this point if the code doesn't work in your case.
+
+If the default, not-doing-these-things behavior does not work, consider activating the aforementioned hardcoded parameters with said flag. They work for my `.stl` files (which I'm starting to think suck), so it might work in your case too.
