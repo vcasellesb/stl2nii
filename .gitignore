@@ -2,3 +2,4 @@ stl2niitest.py
 .DS_Store
 __init__.py
 __pycache__/
+*.egg-info/
