@@ -1,0 +1,51 @@
+[project]
+name = "stl2nii"
+version = "1.0"
+requires-python = ">=3.9"
+description = "stl to NIFTI (.nii.gz) file converter"
+readme = "README.md"
+authors = [
+    { name = "Vicent Caselles", email = "vcasellesb@uoc.edu"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+keywords = [
+    'image segmentation',
+    'semantic segmentation',
+    'medical image analysis',
+    'medical image segmentation',
+]
+dependencies = [
+    "SimpleITK==2.3.1",
+    "numpy==2.0.0",
+    "vtk==9.3.1"
+]
+
+[project.urls]
+homepage = "https://github.com/vcasellesb/stl2nii"
+repository = "https://github.com/vcasellesb/stl2nii"
+
+[project.scripts]
+stl2nii = "stl2nii.main:run_stl2nii_entrypoint"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "ruff",
+    "pre-commit"
+]
+
+[build-system]
+requires = ["setuptools>=67.8.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.codespell]
+skip = '.git,*.pdf,*.svg'
+#
+# ignore-words-list = ''

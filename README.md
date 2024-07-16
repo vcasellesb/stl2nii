@@ -2,13 +2,28 @@
 
 This Python file will convert your STL meshes into NIFTI files. This "tool" is intended for researchers working on biomedical imaging, so the code is structured in a way that requires you to provide an input image to map the "labels" to. Please, if you've found this code useful don't forget to give it a star!
 
+## Installation
+
+To install `stl2nii`, first clone this repository, and then `cd` to it, i.e.:
+
+```bash
+git clone https://github.com/vcasellesb/stl2nii
+cd stl2nii
+```
+
+Then, run the following command:
+
+```bash
+pip install -e .
+```
+This will install a _binary_ file in your environment (I recommend using `conda`), whereby you'll be able it to call it as `stl2nii` (see next section).
+
 ## Usage
 
 ```bash
-python3 /path/to/stl2nii \
-    -i [.stl file(s)] \
-    -ref [.nii/.nii.gz file to map stl to its space (usually the image the stl comes from)] \
-    -o [/path/to/desired/output/folder]
+stl2nii -i [.stl file(s)] \
+        -ref [.nii/.nii.gz file to map stl to its space (usually the image the stl comes from)] \
+        -o [/path/to/desired/output/folder]
 ```
 
 ### Example Usage:
@@ -16,10 +31,9 @@ python3 /path/to/stl2nii \
 Let's say I want to convert a bunch of STL meshes I've obtained by segmenting the image corresponding to patient 225 using my favourite automatic segmentation tool. These are in my Downloads folder, and I want to generate NIFTI files mapped to the original image. I'd do it like this:
 
 ```bash
-python3 ~/work/research/stl2nii \
-    -i ~/Downloads/P225/*.stl \
-    -ref data/P225/image/data_P225.nii.gz \
-    -o data/P225/labels/nii
+stl2nii -i ~/Downloads/P225/*.stl \
+        -ref data/P225/image/data_P225.nii.gz \
+        -o data/P225/labels/nii
 ```
 
 ### Disclosures
