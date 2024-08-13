@@ -22,9 +22,9 @@ keywords = [
     'medical image segmentation',
 ]
 dependencies = [
-    "SimpleITK==2.3.1",
-    "numpy==2.0.0",
-    "vtk==9.3.1"
+    "SimpleITK",
+    "numpy",
+    "vtk"
 ]
 
 [project.urls]
