@@ -23,8 +23,7 @@ keywords = [
 ]
 dependencies = [
     "SimpleITK",
-    "numpy",
-    "vtk"
+    "numpy"
 ]
 
 [project.urls]
