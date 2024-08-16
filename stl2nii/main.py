@@ -5,7 +5,7 @@ import itk
 def mesh_to_nii(mesh_path: str, 
                 output_nii_path: str, 
                 reference_image_path: str,
-                DIM=3) -> str:
+                DIM: int=3) -> str:
 
     MeshType = itk.Mesh[itk.UC, DIM]
     reader = itk.MeshFileReader[MeshType].New()
@@ -34,8 +34,7 @@ def stltonii(stl_files_list: List[str],
              nii_ref: str,
              output_folder: str=None) -> None:
     """
-    Main function. Basically iterates through input and performs confersion in two steps:
-        stl -> vtk -> nii
+    Uses itk::TriangleMeshToBinaryImageFilter to convert the stls/meshes
     """
     for stl_file in stl_files_list:
         
@@ -52,7 +51,6 @@ def stltonii(stl_files_list: List[str],
             output_nii_path=output_nii_path,
             reference_image_path=nii_ref
         )
-
     
 def run_stl2nii_entrypoint():
     import argparse
