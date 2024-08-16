@@ -39,7 +39,7 @@ def stltonii(stl_files_list: List[str],
     """
     for stl_file in stl_files_list:
         
-        if output_folder is None:
+        if not output_folder:
             output_folder = os.path.join(os.path.dirname(stl_file), 'nii')
         
         if not os.path.exists(output_folder):
