@@ -10,6 +10,8 @@ def mesh_to_nii(mesh_path: str,
     # https://discourse.itk.org/t/trianglemeshtobinaryimagefilter-in-python/1604
     # https://examples.itk.org/src/core/mesh/converttrianglemeshtobinaryimage/documentation
 
+    assert mesh_path.endswith('.stl'), f"Only stl files permitted as input! Got {mesh_path}"
+
     MeshType = itk.Mesh[itk.UC, DIM]
     reader = itk.MeshFileReader[MeshType].New()
 
