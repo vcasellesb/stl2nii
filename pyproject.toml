@@ -22,8 +22,7 @@ keywords = [
     'medical image segmentation',
 ]
 dependencies = [
-    "SimpleITK",
-    "numpy"
+   "itk-iomeshstl" 
 ]
 
 [project.urls]
