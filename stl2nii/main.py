@@ -6,6 +6,9 @@ def mesh_to_nii(mesh_path: str,
                 output_nii_path: str, 
                 reference_image_path: str,
                 DIM: int=3) -> str:
+    # sources:
+    # https://discourse.itk.org/t/trianglemeshtobinaryimagefilter-in-python/1604
+    # https://examples.itk.org/src/core/mesh/converttrianglemeshtobinaryimage/documentation
 
     MeshType = itk.Mesh[itk.UC, DIM]
     reader = itk.MeshFileReader[MeshType].New()
