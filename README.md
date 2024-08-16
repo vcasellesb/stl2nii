@@ -2,6 +2,10 @@
 
 This Python file will convert your STL meshes into NIFTI files. This "tool" is intended for researchers working on biomedical imaging, so the code is structured in a way that requires you to provide an input image to map the "labels" to. Please, if you've found this code useful don't forget to give it a star!
 
+## 16/08/24 UPDATE
+
+Now this software uses `itk`, instead of `vtk` and `SimpleITK`, to actually perform the conversion. I think it's much more simple and reliable. The usage has remained the same.
+
 ## Installation
 
 To install `stl2nii`, first clone this repository, and then `cd` to it, i.e.:
@@ -36,10 +40,13 @@ stl2nii -i ~/Downloads/P225/*.stl \
         -o data/P225/labels/nii
 ```
 
-### Disclosures
+If you don't specify the output argument (`-o`), they will be saved inside the folder where the `stl` files are located.
 
-A few things in the code were hardcoded, and now have been hidden away with a flag. You can still activate them with the ```--weird_behavior``` flag. Namely, these were:
-- Rotating the converted `stl` array (see lines 100 and 133-138).
-- At the start of the `.vtk` -> `.nii` conversion, I used to set the origin of the output `sitk.Image` to `(0, 0, 0)`. I've been told that this is not optimal, since obviously you wanna set the so that it matches the reference, so now the default behavior is using the reference origin. However, in my use case, the only way to successfully convert the `stl` meshes is to set it to `(0, 0, 0)`. Please consider this point if the code doesn't work in your case.
+## Docker support
+I've added an option to run this software in a Docker container, just to avoid having to install anything on your local machine. To run it using Docker, first pull the `vcasellesb/stl2nii:v1` docker image (`docker image pull vcasellesb/stl2nii:v1`), and then run it like this:
 
-If the default, not-doing-these-things behavior does not work, consider activating the aforementioned hardcoded parameters with said flag. They work for my `.stl` files (which I'm starting to think suck), so it might work in your case too.
+```bash
+docker container run --rm -v /path/to/reference.nii.gz:/ref/miau.nii.gz -v /path/to/stls/:/stl vcasellesb/stl2nii:v1
+```
+
+It is very important that you mount the reference file inside the docker container in a folder named '`/ref`', and the `.stl` files in a folder named '`/stl`, otherwise the code will fail. How you name the reference file inside the docker container is irrelevant (I've named it `miau.nii.gz`). The output `nifti` files will be available in the host at `/path/to/stls/nii/`.
