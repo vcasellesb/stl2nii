@@ -3,7 +3,7 @@ from typing import List
 import itk
 
 def mesh_to_nii(mesh_path: str, 
-                output_nii_path: str, 
+                output_folder: str,
                 reference_image_path: str,
                 DIM: int=3) -> str:
     # sources:
@@ -11,6 +11,11 @@ def mesh_to_nii(mesh_path: str,
     # https://examples.itk.org/src/core/mesh/converttrianglemeshtobinaryimage/documentation
 
     assert mesh_path.endswith('.stl'), f"Only stl files permitted as input! Got '{mesh_path}'"
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+        
+    output_nii_path = os.path.join(output_folder, os.path.basename(mesh_path).replace('.stl', '.nii.gz'))
 
     MeshType = itk.Mesh[itk.UC, DIM]
     reader = itk.MeshFileReader[MeshType].New()
@@ -41,20 +46,18 @@ def stltonii(stl_files_list: List[str],
     """
     Uses itk::TriangleMeshToBinaryImageFilter to convert the stls/meshes
     """
+    
+    default_output_folder = output_folder is None
+
     for stl_file in stl_files_list:
         
-        if not output_folder:
+        if default_output_folder:
             output_folder = os.path.join(os.path.dirname(stl_file), 'nii')
         
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-        
-        output_nii_path = os.path.join(output_folder, os.path.basename(stl_file).replace('.stl', '.nii.gz'))
-
         try:
             mesh_to_nii(
                 mesh_path=stl_file,
-                output_nii_path=output_nii_path,
+                output_folder=output_folder,
                 reference_image_path=nii_ref
             )
         except AssertionError as e:
