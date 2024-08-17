@@ -10,7 +10,7 @@ def mesh_to_nii(mesh_path: str,
     # https://discourse.itk.org/t/trianglemeshtobinaryimagefilter-in-python/1604
     # https://examples.itk.org/src/core/mesh/converttrianglemeshtobinaryimage/documentation
 
-    assert mesh_path.endswith('.stl'), f"Only stl files permitted as input! Got {mesh_path}"
+    assert mesh_path.endswith('.stl'), f"Only stl files permitted as input! Got '{mesh_path}'"
 
     MeshType = itk.Mesh[itk.UC, DIM]
     reader = itk.MeshFileReader[MeshType].New()
@@ -51,11 +51,14 @@ def stltonii(stl_files_list: List[str],
         
         output_nii_path = os.path.join(output_folder, os.path.basename(stl_file).replace('.stl', '.nii.gz'))
 
-        mesh_to_nii(
-            mesh_path=stl_file,
-            output_nii_path=output_nii_path,
-            reference_image_path=nii_ref
-        )
+        try:
+            mesh_to_nii(
+                mesh_path=stl_file,
+                output_nii_path=output_nii_path,
+                reference_image_path=nii_ref
+            )
+        except AssertionError as e:
+            print(f'{e}. Skipping \'{stl_file}\'.')
     
 def run_stl2nii_entrypoint():
     import argparse
