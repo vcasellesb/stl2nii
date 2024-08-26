@@ -46,7 +46,9 @@ If you don't specify the output argument (`-o`), they will be saved inside the f
 I've added an option to run this software in a Docker container, just to avoid having to install anything on your local machine. To run it using Docker, first pull the `vcasellesb/stl2nii:v1` docker image (`docker image pull vcasellesb/stl2nii:v1`), and then run it like this:
 
 ```bash
-docker container run --rm -v /path/to/reference.nii.gz:/ref/miau.nii.gz -v /path/to/stls/:/stl vcasellesb/stl2nii:v1
+docker container run --rm \
+-v /path/to/reference.nii.gz:/ref/miau.nii.gz \
+-v /path/to/stls/:/stl vcasellesb/stl2nii:v1
 ```
 
 It is very important that you mount the reference file inside the docker container in a folder named '`/ref`', and the `.stl` files in a folder named '`/stl`', otherwise the code will fail. How you name the reference file inside the docker container is irrelevant (I've named it `miau.nii.gz`). The output `nifti` files will be available in the host at `/path/to/stls/nii/`.
