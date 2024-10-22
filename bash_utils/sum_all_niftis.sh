@@ -61,7 +61,7 @@ else
 	fac=1
 	for i in ${arr[@]}; do
 		seg_maths $i -mul $fac $i
-		$SCRIPT_DIR/intersection.sh "${target_dir}"inf.nii.gz $i $target_dir
+		$SCRIPT_DIR/intersection.sh -d "${target_dir}" "${target_dir}"inf.nii.gz $i
 		fac=$((fac + 1))
 	done
 fi
@@ -83,7 +83,7 @@ else
 	fac=1
 	for i in ${arr[@]}; do
 		seg_maths $i -mul $fac $i
-		$SCRIPT_DIR/intersection.sh "${target_dir}"sup.nii.gz $i $target_dir
+		$SCRIPT_DIR/intersection.sh -d "${target_dir}" "${target_dir}"sup.nii.gz $i
 		fac=$((fac + 1))
 	done
 fi
