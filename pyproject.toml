@@ -2,10 +2,10 @@
 name = "stl2nii"
 version = "1.0"
 requires-python = ">=3.9"
-description = "stl to NIFTI (.nii.gz) file converter"
+description = "stl to NIFTI (.nii(.gz)) file converter"
 readme = "README.md"
 authors = [
-    { name = "Vicent Caselles", email = "vcasellesb@uoc.edu"}
+    {name = "Vicent Caselles-Ballester", email = "vcasellesb@uoc.edu"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

@@ -1,11 +1,11 @@
 import os
-from typing import List
+from __future__ import annotations
 import itk
 
 def mesh_to_nii(mesh_path: str, 
                 output_folder: str,
                 reference_image_path: str,
-                DIM: int=3) -> str:
+                DIM: int = 3) -> str:
     # sources:
     # https://discourse.itk.org/t/trianglemeshtobinaryimagefilter-in-python/1604
     # https://examples.itk.org/src/core/mesh/converttrianglemeshtobinaryimage/documentation
@@ -40,9 +40,9 @@ def mesh_to_nii(mesh_path: str,
 
     return output_nii_path
 
-def stltonii(stl_files_list: List[str], 
+def stltonii(stl_files_list: list[str], 
              nii_ref: str,
-             output_folder: str=None) -> None:
+             output_folder: str = None) -> None:
     """
     Uses itk::TriangleMeshToBinaryImageFilter to convert the stls/meshes
     """
@@ -64,10 +64,11 @@ def stltonii(stl_files_list: List[str],
             print(f'{e}. Skipping \'{stl_file}\'.')
     
 def run_stl2nii_entrypoint():
+
     import argparse
 
     parser = argparse.ArgumentParser(prog='stl2nii', 
-                                     description="stl to NIFTI (.nii.gz) file converter")
+                                     description="stl to NIFTI (.nii(.gz)) file converter")
     parser.add_argument('-i', nargs='+', type=str, required=True, 
                         help='Input files. Can be one or more.')
     parser.add_argument('-ref', type=str, required=True, 
