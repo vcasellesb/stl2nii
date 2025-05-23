@@ -1,5 +1,5 @@
-import os
 from __future__ import annotations
+import os
 import itk
 
 def mesh_to_nii(mesh_path: str, 
