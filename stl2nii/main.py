@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 import itk
 
-def mesh_to_nii(mesh_path: str, 
+def mesh_to_nii(mesh_path: str,
                 output_folder: str,
                 reference_image_path: str,
                 DIM: int = 3) -> str:
@@ -14,7 +14,7 @@ def mesh_to_nii(mesh_path: str,
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-        
+
     output_nii_path = os.path.join(output_folder, os.path.basename(mesh_path).replace('.stl', '.nii.gz'))
 
     MeshType = itk.Mesh[itk.UC, DIM]
@@ -30,7 +30,7 @@ def mesh_to_nii(mesh_path: str,
     ConverterType = itk.TriangleMeshToBinaryImageFilter[MeshType, UCType]
     filter = ConverterType.New()
     filter.SetInput(mesh)  # mesh is read from file
-    
+
     # referenceImage is read from file or constructed by setting size, origin, and spacing
     referenceImage = itk.imread(reference_image_path)
     referenceImage = referenceImage.astype(itk.UC)
@@ -46,14 +46,14 @@ def stltonii(stl_files_list: list[str],
     """
     Uses itk::TriangleMeshToBinaryImageFilter to convert the stls/meshes
     """
-    
+
     default_output_folder = output_folder is None
 
     for stl_file in stl_files_list:
-        
+
         if default_output_folder:
             output_folder = os.path.join(os.path.dirname(stl_file), 'nii')
-        
+
         try:
             mesh_to_nii(
                 mesh_path=stl_file,
@@ -62,23 +62,23 @@ def stltonii(stl_files_list: list[str],
             )
         except AssertionError as e:
             print(f'{e}. Skipping \'{stl_file}\'.')
-    
+
 def run_stl2nii_entrypoint():
 
     import argparse
 
     parser = argparse.ArgumentParser(prog='stl2nii', 
                                      description="stl to NIFTI (.nii(.gz)) file converter")
-    parser.add_argument('-i', nargs='+', type=str, required=True, 
+    parser.add_argument('-i', nargs='+', type=str, required=True,
                         help='Input files. Can be one or more.')
-    parser.add_argument('-ref', type=str, required=True, 
+    parser.add_argument('-ref', type=str, required=True,
                         help='Reference NIFTI for computing image properties (i.e. spacing, ...)')
-    parser.add_argument('-o', type=str, required=False, default=None, 
+    parser.add_argument('-o', type=str, required=False, default=None,
                         help='Folder were output will be written (default: input_dir/nii)')
     args = parser.parse_args()
 
-    stltonii(stl_files_list=args.i, 
-             nii_ref=args.ref, 
+    stltonii(stl_files_list=args.i,
+             nii_ref=args.ref,
              output_folder=args.o)
 
 if __name__ == "__main__":   
